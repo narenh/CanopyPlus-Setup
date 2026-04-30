@@ -69,3 +69,4 @@ systemctl status plex-endpoint.service
 ### AI Disclosure
 - Canopy+ is almost entirely human-coded with one major exception: the schema, networking, and data models for Plex's Discover and Metadata endpoints.
 - All UI and app logic is human-written.
+- Integrations and scripts in this repo were written with significant help from AI. I'm new to homelab stuff and am primarily an iOS engineer.
