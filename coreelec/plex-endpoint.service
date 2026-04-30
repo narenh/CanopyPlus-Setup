@@ -1,0 +1,14 @@
+[Unit]
+Description=Plex Media Endpoint Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/storage/scripts
+ExecStart=/usr/bin/python3 /storage/scripts/plex_endpoint.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
