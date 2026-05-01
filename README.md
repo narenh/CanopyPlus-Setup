@@ -20,7 +20,7 @@ A Plex frontend for tvOS, human-written* in SwiftUI. Meant for integrating with 
 - Login with the same Plex account that you use to sign in on your Apple TV. This is required for deeplinking to function.
 - Supports standard accounts and managed Home users, along with PIN enforcement.
 
-## Seerr Integration
+### Seerr Integration
 - Canopy+ supports one-click Seerr authentication.
 - Enter your Seerr host and click connect. This will allow users to make requests for movies and TV seasons in Seerr.
 
