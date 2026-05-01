@@ -22,6 +22,7 @@ A Plex frontend for tvOS, human-written* in SwiftUI. Meant for integrating with 
 
 ### Seerr Integration
 - Canopy+ supports one-click Seerr authentication.
+- Make sure you have logged in to Seerr with your Plex account at least once on another device, otherwise Seerr will reject the request.
 - Enter your Seerr host and click connect. This will allow users to make requests for movies and TV seasons in Seerr.
 
 ### Prowlarr Integration
