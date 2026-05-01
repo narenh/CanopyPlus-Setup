@@ -37,6 +37,7 @@ A Plex frontend for tvOS, human-written* in SwiftUI. Meant for integrating with 
 
 ### External Player Integration
 - Home Assistant (HASS) HIGHLY recommended. This will allow you to tweak things based on your own setup.
+- ** Important note: these setup instructions are one-and-done.** Once you have it working, you'll never need to worry about it again. 
 
 #### Nvidia Shield
 - This one's by far the easiest. 
