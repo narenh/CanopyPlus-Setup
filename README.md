@@ -20,22 +20,6 @@ A Plex frontend for tvOS, human-written* in SwiftUI. Meant for integrating with 
 - Login with the same Plex account that you use to sign in on your Apple TV. This is required for deeplinking to function.
 - Supports standard accounts and managed Home users, along with PIN enforcement.
 
-### Seerr Integration
-- Canopy+ supports one-click Seerr authentication.
-- Make sure you have logged in to Seerr with your Plex account at least once on another device, otherwise Seerr will reject the request.
-- Enter your Seerr host and click connect. This will allow users to make requests for movies and TV seasons in Seerr.
-
-### Prowlarr Integration
-**You MUST reconfigure Prowlarr when updating to version 1.2**
-- Canopy+ supports Prowlarr with an API key.
-- Some users may wish to set up multiple download clients in Prowlarr, configured to download to different folders. If you'd like to set up ephemerality, you could configure one to delete downloads after a time interval or a disk quota, and enter than download client ID in the "Streaming" section of Prowlarr settings in Canopy+
-- You could then also specify a permanent download client to enable "Add to Library"
-- Both buttons work exactly the same way, so it's up to you which you'd like to configure/use!
-- Here's my personal setup:
-    - My home: Have both "Streaming" and "Add to Library" configured. **This disables Seerr for movies** (would be redundant).
-    - Family home: Have "Streaming" enabled. Family members must request in Seerr to save things permanently to my library.
-    - Close friends: No Prowlarr access. They must request all content.
-
 ### External Player Integration
 - Home Assistant (HASS) HIGHLY recommended. This will allow you to tweak things based on your own setup.
 - Important note: **these setup instructions are one-and-done.** Once you have it working, you'll never need to worry about it again. 
@@ -81,7 +65,21 @@ systemctl status plex-endpoint.service
 - A simple GET to `http://COREELEC_IP:8082/?rating_key=RATING_KEY&media_type=[movie|episode]` will trigger playback!
 - Now you can set up a HASS webhook just like above in the Shield instructions, but you can do other things in the automation if you'd like. For example, I have my Denon AVR integrated into HASS so I have it switch inputs and audio modes, along with adjusting lights after sundown.
 
+### Seerr Integration
+- Canopy+ supports one-click Seerr authentication.
+- Make sure you have logged in to Seerr with your Plex account at least once on another device, otherwise Seerr will reject the request.
+- Enter your Seerr host and click connect. This will allow users to make requests for movies and TV seasons in Seerr.
 
+### Prowlarr Integration
+**You MUST reconfigure Prowlarr when updating to version 1.2**
+- Canopy+ supports Prowlarr with an API key.
+- Some users may wish to set up multiple download clients in Prowlarr, configured to download to different folders. If you'd like to set up ephemerality, you could configure one to delete downloads after a time interval or a disk quota, and enter than download client ID in the "Streaming" section of Prowlarr settings in Canopy+
+- You could then also specify a permanent download client to enable "Add to Library"
+- Both buttons work exactly the same way, so it's up to you which you'd like to configure/use!
+- Here's my personal setup:
+    - My home: Have both "Streaming" and "Add to Library" configured. **This disables Seerr for movies** (would be redundant).
+    - Family home: Have "Streaming" enabled. Family members must request in Seerr to save things permanently to my library.
+    - Close friends: No Prowlarr access. They must request all content.
 
 ### AI Disclosure
 - Canopy+ is almost entirely human-coded with one major exception: the schema, networking, and data models for Plex's Discover and Metadata endpoints.
