@@ -10,7 +10,7 @@ A Plex frontend for tvOS, human-written* in SwiftUI. Meant for integrating with 
 </p>
 
 ## Download
-
+Canopy+ is available on the tvOS App Store. Voice search for "canopy plus"!
 <a href='https://apps.apple.com/us/app/canopy/id6742864890'><img height='60' alt='Download on the App Store' src='assets/app-store-badge.png'/></a>
 
 
