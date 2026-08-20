@@ -21,7 +21,13 @@ Canopy+ is available on the tvOS App Store. Voice search for "canopy plus"!
 - Login with the same Plex account that you use to sign in on your Apple TV. This is required for deeplinking to function.
 - Supports standard accounts and managed Home users, along with PIN enforcement.
 
-### External Player Integration
+### (NEW!) PlexKodiConnect Integration (v1.4.4+)
+- Ensure Plex Companion is enabled in PKC settings (it's on by default)
+- Enter PKC IP/port in Settings → External Player
+- Choose which formats you want to use PKC for in Settings → Formats
+- Note: NO special tools are required, no need to use HASS or set up a special script on your CoreELEC box.
+
+### Manual External Player (legacy, no longer required)
 - Home Assistant (HASS) HIGHLY recommended. This will allow you to tweak things based on your own setup.
 - Important note: **these setup instructions are one-and-done.** Once you have it working, you'll never need to worry about it again. 
 
