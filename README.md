@@ -21,7 +21,8 @@ Canopy+ is available on the tvOS App Store. Voice search for "canopy plus"!
 - Login with the same Plex account that you use to sign in on your Apple TV. This is required for deeplinking to function.
 - Supports standard accounts and managed Home users, along with PIN enforcement.
 
-### (NEW!) PlexKodiConnect Integration (v1.4.4+)
+### (NEW!) PlexKodiConnect Integration (v1.4.5+)
+**v1.4.5 is currently held up in App Review, with no ETA or response from Apple.**
 - Ensure Plex Companion is enabled in PKC settings (it's on by default)
 - Enter PKC IP/port in Settings → External Player
 - Choose which formats you want to use PKC for in Settings → Formats
@@ -33,7 +34,6 @@ Canopy+ is available on the tvOS App Store. Voice search for "canopy plus"!
 - Enter your Seerr host and click connect. This will allow users to make requests for movies and TV seasons in Seerr.
 
 ### Prowlarr Integration
-**You MUST reconfigure Prowlarr when updating to version 1.2**
 - Canopy+ supports Prowlarr with an API key.
 - Some users may wish to set up multiple download clients in Prowlarr, configured to download to different folders. If you'd like to set up ephemerality, you could configure one to delete downloads after a time interval or a disk quota, and enter than download client ID in the "Streaming" section of Prowlarr settings in Canopy+
 - You could then also specify a permanent download client to enable "Add to Library"
