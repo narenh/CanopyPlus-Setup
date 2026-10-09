@@ -21,8 +21,7 @@ Canopy+ is available on the tvOS App Store. Voice search for "canopy plus"!
 - Login with the same Plex account that you use to sign in on your Apple TV. This is required for deeplinking to function.
 - Supports standard accounts and managed Home users, along with PIN enforcement.
 
-### (NEW!) PlexKodiConnect Integration (v1.4.5+)
-**v1.4.5 is currently held up in App Review, with no ETA or response from Apple.**
+### (NEW!) PlexKodiConnect Integration
 - Ensure Plex Companion is enabled in PKC settings (it's on by default)
 - Enter PKC IP/port in Settings → External Player
 - Choose which formats you want to use PKC for in Settings → Formats
