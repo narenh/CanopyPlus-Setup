@@ -3,7 +3,7 @@
   Canopy+
 </h1>
 
-A Plex frontend for tvOS, human-written* in SwiftUI. Meant for integrating with CoreELEC (Ugoos AM6B+) or Nvidia Shield.
+A native Plex client for tvOS, human-written* in SwiftUI. Meant for integrating with CoreELEC (Ugoos AM6B+) or Nvidia Shield, along with other home automations.
 
 <p align="center">
   <img src="assets/hero.png" alt="Canopy+" width="800" />
@@ -14,14 +14,14 @@ Canopy+ is available on the tvOS App Store. Voice search for "canopy plus"!
 
 <a href='https://apps.apple.com/us/app/canopy/id6742864890'><img height='60' alt='Download on the App Store' src='assets/app-store-badge.png'/></a>
 
-## Login
-- Standard accounts and managed Home users are both supported, including PIN enforcement.
+## Plex Login
+Canopy+ uses the standard Plex QR-based login and supports regular accounts and managed Home users (including PIN enforcement).
 
 ## Default Video Player
-Canopy+ uses a custom playback UI on top of AetherEngine, allowing native support for Dolby Vision Profiles 5 and 8, with on-the-fly conversion of 7 to 8.1. DD+ (lossy) Atmos is also passed natively via Dolby MAT. HLG is converted to HDR10, and HDR10+ metadata is transmitted automatically on the 3rd and 4th gen.
+Canopy+ uses a custom playback UI on top of [AetherEngine](https://github.com/superuser404notfound/AetherEngine), allowing native support for Dolby Vision Profiles 5 and 8, with on-the-fly conversion of 7 to 8.1. DD+ (lossy) Atmos is also passed natively via Dolby MAT. HLG is converted to HDR10, and HDR10+ metadata is transmitted automatically on the 3rd and 4th gen.
 
 ## External Player
-Canopy+ can hand playback off to another box, like CoreELEC or an Nvidia Shield, for the formats the Apple TV can't play properly. You browse on the Apple TV, and playback starts on the other device.
+Canopy+ can hand playback off to another box, like **CoreELEC** or an **Nvidia Shield**, for formats the Apple TV can't play properly. You browse on the Apple TV, and playback starts on the other device.
 
 You can set this up with or without Home Assistant, although I personally think having HASS available makes everything work a little bit better.
 
