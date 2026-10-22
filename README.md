@@ -14,85 +14,170 @@ Canopy+ is available on the tvOS App Store. Voice search for "canopy plus"!
 
 <a href='https://apps.apple.com/us/app/canopy/id6742864890'><img height='60' alt='Download on the App Store' src='assets/app-store-badge.png'/></a>
 
+## Login
+- Log in with the same Plex account you use on your Apple TV. Deeplinking depends on it.
+- Standard accounts and managed Home users are both supported, including PIN enforcement.
 
-## Setup Instructions
+## External Player
+Canopy+ can hand playback off to another box, like CoreELEC or an Nvidia Shield, for the formats the Apple TV can't play properly. You browse on the Apple TV, and playback starts on the other device.
 
-### Login
-- Login with the same Plex account that you use to sign in on your Apple TV. This is required for deeplinking to function.
-- Supports standard accounts and managed Home users, along with PIN enforcement.
+There are two ways to set this up.
 
-### (NEW!) PlexKodiConnect Integration
-- Ensure Plex Companion is enabled in PKC settings (it's on by default)
-- Enter PKC IP/port in Settings → External Player
-- Choose which formats you want to use PKC for in Settings → Formats
-- Note: NO special tools are required, no need to use HASS or set up a special script on your CoreELEC box.
+### Without Home Assistant (PlexKodiConnect)
+For Kodi with [PlexKodiConnect](https://github.com/croneter/PlexKodiConnect) (PKC). Nothing to install besides PKC itself.
 
-### Seerr Integration
+- Make sure Plex Companion is enabled in PKC's settings (it's on by default).
+- In Canopy+, open **Settings › External Player**, set **External Player** to **PlexKodiConnect**, and enter your Kodi box's IP and PKC's Companion port (default `3005`).
+- In **Settings › Devices & Formats**, choose which formats should play on Kodi.
+
+Canopy+ asks PKC to play the item over Plex Companion, so you get a normal Plex session and your watched status syncs.
+
+Note: on some setups, playback started this way occasionally fails the HDMI handshake (picture never comes up after the TV/AVR switches inputs). If that happens to you, the Home Assistant setup below starts playback a different way and doesn't have the problem.
+
+### With Home Assistant
+Canopy+ sends a webhook to Home Assistant, and Home Assistant starts playback. This takes a few more minutes to set up, but it lets you do anything else you want at the same time: switch AVR inputs and sound modes, turn amps on or off, dim the lights, etc.
+
+In Canopy+, open **Settings › External Player**, set **External Player** to **Webhook**, and enter your webhook URL. Then choose formats in **Settings › Devices & Formats**.
+
+On every playback, Canopy+ POSTs this JSON to the webhook:
+
+```json
+{
+  "serverId": "<your Plex server's machine identifier>",
+  "ratingKey": "12345",
+  "mediaType": "movie",
+  "resume": true,
+  "seamlessBranching": false,
+  "startPlaying": true
+}
+```
+
+`mediaType` is `movie` or `episode`.
+
+> [!TIP]
+> Use your Home Assistant's IP address in the webhook URL, not `homeassistant.local`. The Apple TV can usually resolve `.local` names, but plenty of other things (Docker containers, for one) can't, and an IP always works. Give Home Assistant a DHCP reservation so the IP doesn't change.
+
+#### CoreELEC / Kodi
+Requires PKC, using **add-on paths** (PKC's default). PKC names every library item it syncs `plugin://plugin.video.plexkodiconnect…?plex_id=<ratingKey>&…`, so Home Assistant can find the Kodi item for a Plex rating key by asking Kodi directly, then play it from Kodi's own library. Nothing runs on the Kodi box. This doesn't work with PKC's direct paths.
+
+PKC quirk: any TV show set to "hide seasons" in Plex won't sync properly. Make sure all your shows show their seasons. This is a longtime Plex API issue that PKC hasn't been able to work around.
+
+1. In Kodi, turn on **Settings › Services › Control › Allow remote control via HTTP**. Note the port (default `8080`), username (default `kodi`) and password.
+2. Put the Kodi password in `secrets.yaml`, in the same folder as `configuration.yaml` (create the file if it doesn't exist):
+
+   ```yaml
+   kodi_password: your-kodi-password
+   ```
+
+3. Add these to `configuration.yaml`, replacing `KODI_IP`:
+
+   ```yaml
+   rest_command:
+     kodi_lookup:
+       url: "http://KODI_IP:8080/jsonrpc"
+       method: POST
+       username: kodi
+       password: !secret kodi_password
+       content_type: "application/json"
+       payload: >-
+         {"jsonrpc":"2.0","id":1,
+          "method":"{{ 'VideoLibrary.GetMovies' if media_type == 'movie' else 'VideoLibrary.GetEpisodes' }}",
+          "params":{"filter":{"field":"filename","operator":"contains","value":"plex_id={{ rating_key }}&"}}}
+     kodi_play:
+       url: "http://KODI_IP:8080/jsonrpc"
+       method: POST
+       username: kodi
+       password: !secret kodi_password
+       content_type: "application/json"
+       payload: >-
+         {"jsonrpc":"2.0","id":2,"method":"Player.Open",
+          "params":{"item":{"{{ media_type }}id":{{ kodi_id }}},"options":{"resume":{{ resume | lower }}}}}
+   ```
+
+4. Restart Home Assistant.
+5. Create an automation (**⋮ › Edit in YAML**) and paste:
+
+   ```yaml
+   alias: Canopy+ play on Kodi
+   mode: single
+   triggers:
+     - trigger: webhook
+       webhook_id: canopy-play
+       allowed_methods: [POST]
+       local_only: true
+   actions:
+     # Your own steps go here: wake the TV, switch the AVR input,
+     # set a sound mode, run a script, adjust lights...
+     - action: rest_command.kodi_lookup
+       data:
+         media_type: "{{ trigger.json.mediaType }}"
+         rating_key: "{{ trigger.json.ratingKey }}"
+       response_variable: lookup
+     - variables:
+         items: "{{ lookup.content.result[trigger.json.mediaType ~ 's'] | default([]) }}"
+     - condition: "{{ items | count > 0 }}"
+     - action: rest_command.kodi_play
+       data:
+         media_type: "{{ trigger.json.mediaType }}"
+         kodi_id: "{{ items[0][trigger.json.mediaType ~ 'id'] }}"
+         resume: "{{ trigger.json.resume }}"
+   ```
+
+6. Your webhook URL is `http://HOME_ASSISTANT_IP:8123/api/webhook/canopy-play`.
+
+Calling a script with `action: script.your_script` waits for it to finish before moving on, so playback starts once your setup is done. That's usually what you want, so the AVR is already on the right input and sound mode when Kodi starts. Use `action: script.turn_on` instead if you'd rather playback start right away and the script run alongside it.
+
+To test without the Apple TV, find a rating key (in Plex Web, **Get Info › View XML** on any movie, the number after `/library/metadata/` in the URL) and run:
+
+```sh
+curl -i -X POST http://HOME_ASSISTANT_IP:8123/api/webhook/canopy-play \
+  -H 'Content-Type: application/json' \
+  -d '{"ratingKey":"12345","mediaType":"movie","resume":true}'
+```
+
+Home Assistant answers `200` whether or not the automation worked, so check the automation's **Traces** to see what happened.
+
+#### Nvidia Shield
+1. In Home Assistant, set up the [Android Debug Bridge](https://www.home-assistant.io/integrations/androidtv/) integration for your Shield.
+2. Create an automation with a **Webhook** trigger.
+3. Under **Then do**, wake the Shield, delay for 3 seconds, then run this ADB command:
+
+   ```
+   am start -a android.intent.action.VIEW -p com.plexapp.android -d '{% if trigger.json.startPlaying %}plex://watch/video?uri=server%3A%2F%2F{{ trigger.json.serverId }}%2Fcom.plexapp.plugins.library%2Flibrary%2Fmetadata%2F{{ trigger.json.ratingKey }}{% else %}plex://libraries/{{ trigger.json.serverId }}/metadata/{{ trigger.json.ratingKey }}{% endif %}'
+   ```
+
+   This starts playback straight away, or opens the item's page in Plex when Canopy+ asks it only to open the item. Keep the single quotes around the link, so the shell passes it to Plex untouched.
+
+4. Copy the webhook URL (`http://HOME_ASSISTANT_IP:8123/api/webhook/WEBHOOK_ID`) into Canopy+ as above.
+
+The Shield's CEC works properly, so your TV/AVR/soundbar should switch inputs on its own.
+
+> [!NOTE]
+> Older guides use `plex://server://…` with an `android.intent.extra.START_PLAYBACK` extra. Current versions of Plex for Android TV ignore both, so use the links above.
+
+<img src="assets/hass-plex.png" alt="Home Assistant automation for the Shield" width="400" />
+
+## Seerr
 - Canopy+ supports one-click Seerr authentication.
-- Make sure you have logged in to Seerr with your Plex account at least once on another device, otherwise Seerr will reject the request.
-- Enter your Seerr host and click connect. This will allow users to make requests for movies and TV seasons in Seerr.
+- Log in to Seerr with your Plex account at least once on another device first, otherwise Seerr will reject the request.
+- Enter your Seerr host and click connect. Users can then request movies and TV seasons in Seerr.
 
-### Prowlarr Integration
+## Prowlarr
 - Canopy+ supports Prowlarr with an API key.
-- Some users may wish to set up multiple download clients in Prowlarr, configured to download to different folders. If you'd like to set up ephemerality, you could configure one to delete downloads after a time interval or a disk quota, and enter than download client ID in the "Streaming" section of Prowlarr settings in Canopy+
-- You could then also specify a permanent download client to enable "Add to Library"
-- Both buttons work exactly the same way, so it's up to you which you'd like to configure/use!
-- Here's my personal setup:
-    - My home: Have both "Streaming" and "Add to Library" configured. **This disables Seerr for movies** (would be redundant).
-    - Family home: Have "Streaming" enabled. Family members must request in Seerr to save things permanently to my library.
-    - Close friends: No Prowlarr access. They must request all content.
+- You can set up multiple download clients in Prowlarr that download to different folders. For ephemeral streaming, configure one to delete downloads after a time interval or disk quota, and enter that download client's ID in the "Streaming" section of Prowlarr settings in Canopy+.
+- You can also specify a permanent download client to enable "Add to Library".
+- Both buttons work exactly the same way, so it's up to you which to configure and use.
+- My personal setup:
+    - My home: both "Streaming" and "Add to Library" configured. **This disables Seerr for movies** (it would be redundant).
+    - Family home: "Streaming" enabled. Family members request in Seerr to save things permanently to my library.
+    - Close friends: no Prowlarr access. They request everything.
 
-### AI Disclosure
-- Canopy+ is almost entirely human-coded with one major exception: the schema, networking, and data models for Plex's Discover and Metadata endpoints.
+## AI Disclosure
+- Canopy+ is almost entirely human-coded, with one major exception: the schema, networking, and data models for Plex's Discover and Metadata endpoints.
 - All UI and app logic is human-written.
-- Integrations and scripts in this repo were written with significant help from AI. I'm new to homelab stuff and am primarily an iOS engineer.
+- The integration docs in this repo were written with significant help from AI. I'm new to homelab stuff and am primarily an iOS engineer.
 
-### More Screenshots
+## More Screenshots
 <p align="center">
   <img src="assets/canopy-reddit.jpg" alt="Canopy+" width="800" />
 </p>
-
-### Manual External Player (legacy, no longer required)
-- Home Assistant (HASS) HIGHLY recommended. This will allow you to tweak things based on your own setup.
-- Important note: **these setup instructions are one-and-done.** Once you have it working, you'll never need to worry about it again. 
-
-#### Nvidia Shield
-- This one's by far the easiest. 
-- HASS → Install Android Debug Bridge
-- HASS → Settings → Automations → Create Automation From Scratch. 
-- Add trigger → Webhook (can customize this if you'd like)
-- Under "Then do", wake up your shield, Delay for 3 seconds, then run this ADB command: 
-```
-am start --ez "android.intent.extra.START_PLAYBACK" '{{
-    trigger.json.startPlaying }}' -a android.intent.action.VIEW
-    'plex://server://{{ trigger.json.serverId
-    }}/com.plexapp.plugins.library/library/metadata/{{ trigger.json.ratingKey
-    }}'
-```
-- Get the full webhook URL. Generally will be `http://[HASS_HOST]:[HASS_PORT]/api/webhook/[WEBHOOK_ID]`
-- Copy the URL on your iPhone, open Canopy+ → Settings → External Player → and paste the URL into the URL field.
-- Note: Since the shield has a working CEC implementation, input switching should be handled automatically by your AVR/TV/Soundbar
-<img src="assets/hass-plex.png" alt="Canopy+" width="400" />
-
-#### CoreELEC (Ugoos AM6B+ or similar)
-- This one is slightly more complicated, as Kodi deeplinking can be a bit tricky.
-- Install PKC on CoreELEC. PM4K users, you can continue to use PM4K (although there will be no need for it, presuming you keep your browsing to the Apple TV).
-- PKC is required because it allows Kodi to start playback natively, including Plex sessions and tracking watched status.
-- PKC quirks: make sure all of your TV shows are set to "show" their seasons. Any TV show set to "hide seasons" will not sync properly. This is a longtime bug with the Plex API, and PKC has been unable to find a workaround.
-- PKC quirks, part 2: PKC allows for starting playback via "addon paths", which allows you to start playback with just a ratingKey. However, in this mode, it will not trigger a Plex session and will not sync your watched status.
-- So, we have to do a little Kodi db hacking.
-- In this repo, you'll find three files in `/coreelec`, copy these to your CoreELEC box: 
-	- Copy `process_media.sh` to `/storage/scripts/process_media.sh`
-	- Copy `plex_endpoint.py` to `/storage/scripts/plex_endpoint.py`
-	- Copy `plex-endpoint.service` to `/storage/.config/system.d/plex-endpoint.service`
-- Register and start the service:
-```
-systemctl daemon-reload
-systemctl enable plex-endpoint.service
-systemctl start plex-endpoint.service
-systemctl status plex-endpoint.service
-```
-- What this does is run a tiny Python server that looks up Kodi's media ID from a Plex ratingKey and media type (Kodi has separate DBs for movies and TV episodes)
-    - You'll have to modify the Python script to include your Kodi HTTP control credentials, and you may want to make other changes depending on your setup
-- A simple GET to `http://COREELEC_IP:8082/?rating_key=RATING_KEY&media_type=[movie|episode]` will trigger playback!
-- Now you can set up a HASS webhook just like above in the Shield instructions, but you can do other things in the automation if you'd like. For example, I have my Denon AVR integrated into HASS so I have it switch inputs and audio modes, along with adjusting lights after sundown.
