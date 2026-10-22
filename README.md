@@ -15,13 +15,15 @@ Canopy+ is available on the tvOS App Store. Voice search for "canopy plus"!
 <a href='https://apps.apple.com/us/app/canopy/id6742864890'><img height='60' alt='Download on the App Store' src='assets/app-store-badge.png'/></a>
 
 ## Login
-- Log in with the same Plex account you use on your Apple TV. Deeplinking depends on it.
 - Standard accounts and managed Home users are both supported, including PIN enforcement.
+
+## Default Video Player
+Canopy+ uses a custom playback UI on top of AetherEngine, allowing native support for Dolby Vision Profiles 5 and 8, with on-the-fly conversion of 7 to 8.1. DD+ (lossy) Atmos is also passed natively via Dolby MAT. HLG is converted to HDR10, and HDR10+ metadata is transmitted automatically on the 3rd and 4th gen.
 
 ## External Player
 Canopy+ can hand playback off to another box, like CoreELEC or an Nvidia Shield, for the formats the Apple TV can't play properly. You browse on the Apple TV, and playback starts on the other device.
 
-There are two ways to set this up.
+You can set this up with or without Home Assistant, although I personally think having HASS available makes everything work a little bit better.
 
 ### Without Home Assistant (PlexKodiConnect)
 For Kodi with [PlexKodiConnect](https://github.com/croneter/PlexKodiConnect) (PKC). Nothing to install besides PKC itself.
