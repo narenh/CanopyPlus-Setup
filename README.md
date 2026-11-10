@@ -159,7 +159,8 @@ The Shield's CEC works properly, so your TV/AVR/soundbar should switch inputs on
 
 <img src="assets/hass-plex.png" alt="Home Assistant automation for the Shield" width="400" />
 
-## CPlus
+## CPlus (deprecated)
+Note: CPlus development has ceased in favor of a much more robust replacement of Seerr and Sonarr/Radarr. Canoparr is under active development and will be released as an open-source Docker image soon!
 - CPlus is an [open-source backend for Canopy+](https://github.com/narenh/cplus-server) that makes integrating Seerr/Prowlarr/Sonarr/Radarr much easier. It also provides you, the server owner, with a way to easily get logging info from your users (my parents live in another state, so this lets me make sure they're connecting to the right URLs, etc). [View on GitHub](https://github.com/narenh/cplus-server)
 
 ## Seerr
